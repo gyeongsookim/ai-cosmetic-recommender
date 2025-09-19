@@ -1,0 +1,82 @@
+<!doctype html>
+<html class="no-js" lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>SkinGenius</title>
+    <link rel="stylesheet" href="assets/css/bootstrap.min.css">
+    <script src="assets/js/jquery.js"></script>
+    <style>
+      .search-result {
+        margin-top: 20px;
+        padding: 15px;
+        border: 1px solid #ddd;
+        background-color: #f9f9f9;
+      }
+    </style>
+  </head>
+  <body>
+    <section id="home" class="welcome-hero">
+      <div class="container">
+        <div class="welcome-hero-txt">
+          <h2>SkinGenius</h2>
+          <p>AI 피부 분석, 당신만을 위한 맞춤 화장품 쇼핑</p>
+        </div>
+        <div class="welcome-hero-serch-box">
+          <div class="welcome-hero-form">
+            <div class="single-welcome-hero-form">
+              <h3>피부 타입</h3>
+              <select id="skinType">
+                <option value="">-- 피부 타입 선택 --</option>
+                <option value="지성">지성</option>
+                <option value="건성">건성</option>
+                <option value="복합성">복합성</option>
+                <option value="민감성">민감성</option>
+              </select>
+            </div>
+            <div class="single-welcome-hero-form">
+              <h3>피부 고민</h3>
+              <label><input type="radio" name="concern" value="여드름" /> 여드름</label>
+              <label><input type="radio" name="concern" value="모공" /> 모공</label>
+              <label><input type="radio" name="concern" value="홍조" /> 홍조</label>
+              <label><input type="radio" name="concern" value="건조" /> 건조</label>
+              <label><input type="radio" name="concern" value="트러블" /> 트러블</label>
+            </div>
+          </div>
+          <div class="welcome-hero-serch">
+            <button class="welcome-hero-btn" onclick="searchByTypeAndConcern()">추천 받기</button>
+          </div>
+        </div>
+        <div id="searchResult" class="search-result" style="display: none;"></div>
+      </div>
+    </section>
+
+    <script>
+      function searchByTypeAndConcern() {
+        const type = document.getElementById("skinType").value;
+        const concernInput = document.querySelector("input[name='concern']:checked");
+        const concern = concernInput ? concernInput.value : "";
+
+        fetch(`http://localhost:3000/api/search?type=${encodeURIComponent(type)}&concern=${encodeURIComponent(concern)}`)
+          .then(res => res.json())
+          .then(data => {
+            const resultBox = document.getElementById("searchResult");
+            resultBox.innerHTML = "";
+            if (data.length > 0) {
+              data.forEach(item => {
+                resultBox.innerHTML += `<h4>${item.name} (${item.brand})</h4><p>피부 타입: ${item.type}, 고민: ${item.concerns.join(", ")}</p><hr/>`;
+              });
+            } else {
+              resultBox.innerHTML = "조건에 맞는 제품이 없습니다.";
+            }
+            resultBox.style.display = "block";
+          })
+          .catch(err => {
+            console.error(err);
+            alert("서버 연결에 실패했습니다.");
+          });
+      }
+    </script>
+  </body>
+</html>

@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>마이페이지 - SkinGenius</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f0f2f5;
+      padding: 40px;
+    }
+    .container {
+      max-width: 600px;
+      margin: auto;
+      background: #fff;
+      padding: 30px;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+    .header h2 {
+      margin: 0;
+      color: #333;
+    }
+    select {
+      width: 100%;
+      padding: 8px;
+      margin-top: 5px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+    #logoutBtn, #editBtn {
+      padding: 6px 12px;
+      margin-left: 10px;
+      background-color: #ff5f7e;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    #logoutBtn:hover, #editBtn:hover {
+      background-color: #ff5f7e;
+    }
+    .info p {
+      line-height: 1.8;
+      font-size: 16px;
+      color: #555;
+    }
+    #editForm {
+      display: none;
+    }
+    #editForm label {
+      display: block;
+      margin-top: 12px;
+    }
+    #editForm input {
+      width: 100%;
+      padding: 8px;
+      margin-top: 4px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+    #saveBtn {
+      margin-top: 20px;
+      padding: 10px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    #saveBtn:hover {
+      background-color: #45a049;
+    }
+    #deleteSection {
+      text-align: center;
+      margin-top: 30px;
+    }
+    #deleteBtn {
+      background-color: #999;
+      padding: 8px 16px;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    #deleteBtn:hover {
+      background-color: #777;
+    }
+    #surveyResult {
+      margin-top: 20px;
+      padding: 15px;
+      background: #f8f8f8;
+      border-radius: 6px;
+      border: 1px solid #ddd;
+    }
+    #surveyResult p {
+      margin: 8px 0;
+    }
+    #surveyResult button {
+      margin-top: 10px;
+      padding: 8px 12px;
+      background-color: #4a90e2;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h2>마이페이지</h2>
+      <div>
+        <button id="editBtn">정보 수정</button>
+        <button id="logoutBtn">로그아웃</button>
+      </div>
+    </div>
+
+    <div class="info" id="userInfo"></div>
+    <div id="surveyResult"></div>
+
+    <form id="editForm">
+      <label>이름 <input type="text" id="name"></label>
+      <label>이메일 <input type="email" id="email"></label>
+      <label>전화번호 <input type="tel" id="phone"></label>
+      <label for="gender">성별</label>
+      <select id="gender" required>
+        <option value="">선택</option>
+        <option value="남성">남성</option>
+        <option value="여성">여성</option>
+      </select>
+      <label>생년월일 <input type="date" id="birth"></label>
+      <label for="skinType">피부 타입</label>
+      <select id="skinType" required>
+        <option value="">선택</option>
+        <option value="지성">지성</option>
+        <option value="건성">건성</option>
+        <option value="복합성">복합성</option>
+        <option value="민감성">민감성</option>
+      </select>
+      </label>
+      <label>알레르기 <input type="text" id="allergy"></label>
+      <label>현재 비밀번호 <input type="password" id="currentPassword" placeholder="현재 비밀번호 입력" required></label>
+      <label>비밀번호 변경 <input type="password" id="newPassword" placeholder="비밀번호 변경을 원치 않으면 입력X"></label>
+      <button type="submit" id="saveBtn">저장</button>
+    </form>
+
+    <div id="deleteSection">
+      <button id="deleteBtn">회원 탈퇴</button>
+    </div>
+    <div style="text-align: center; margin-top: 20px;">
+    <button onclick="location.href='main.html'" style="
+      padding: 10px 20px;
+      background-color: #4a90e2;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      ">🏠 메인 페이지로 돌아가기</button>
+</div>
+
+  </div>
+
+<script>
+  const stored = JSON.parse(localStorage.getItem('user') || '{}');
+  const userStr = localStorage.getItem('user');
+  let user = null;
+  if (!userStr) {
+    alert("로그인 후 이용해주세요.");
+    window.location.href = "/login.html";
+  }
+  if (userStr) {
+    try {
+      user = JSON.parse(userStr);
+    } catch (e) {
+      console.error('사용자 정보 파싱 오류:', e);
+    }
+  }
+
+  function renderUserInfo(user) {
+    document.getElementById('userInfo').innerHTML = `
+      <p><strong>${user.name}님, 안녕하세요! 👋</strong></p>
+      <p><strong>이름:</strong> ${user.name}</p>
+      <p><strong>이메일:</strong> ${user.email}</p>
+      <p><strong>전화번호:</strong> ${user.phone}</p>
+      <p><strong>성별:</strong> ${user.gender}</p>
+      <p><strong>생년월일:</strong> ${user.birth}</p>
+      <p><strong>피부 타입:</strong> ${user.skinType}</p>
+      <p><strong>알레르기:</strong> ${user.allergy || '없음'}</p>
+    `;
+
+     const userId = user?.id || user?.email || user?.name;
+  fetch(`/api/survey?userId=${encodeURIComponent(userId)}`)
+    .then(res => res.json())
+    .then(survey => {
+      if (!survey) return;
+      document.getElementById('surveyResult').innerHTML = `
+        <h3>🧪 설문 분석 결과</h3>
+        <p><strong>피부 타입:</strong> ${survey.skinType}</p>
+        <p><strong>피부 고민:</strong> ${survey.concerns?.join(', ') || '없음'}</p>
+        <button onclick="location.href='survey.html'">결과 다시 분석하기</button>
+      `;
+    })
+    .catch(err => {
+      console.error('설문 결과 불러오기 실패:', err);
+    });
+}
+
+  if (user) {
+    renderUserInfo(user);
+    document.getElementById('name').value = user.name || '';
+    document.getElementById('email').value = user.email || '';
+    document.getElementById('phone').value = user.phone || '';
+    document.getElementById('gender').value = user.gender || '';
+    document.getElementById('birth').value = user.birth || '';
+    document.getElementById('skinType').value = user.skinType || '';
+    document.getElementById('allergy').value = user.allergy || '';
+  }
+
+  document.getElementById('logoutBtn').addEventListener('click', () => {
+    localStorage.removeItem('user');
+    alert('로그아웃 되었습니다.');
+    window.location.href = '/login.html';
+  });
+
+  document.getElementById('editBtn').addEventListener('click', () => {
+    document.getElementById('userInfo').style.display = 'none';
+    document.getElementById('editForm').style.display = 'block';
+  });
+
+  document.getElementById('editForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+
+    const stored = JSON.parse(localStorage.getItem('user') || '{}');
+    const currentPassword = document.getElementById('currentPassword').value;
+    const newPassword = document.getElementById('newPassword').value;
+
+    if (currentPassword !== stored.password) {
+      alert('현재 비밀번호가 일치하지 않습니다.');
+      return;
+    }
+
+    const updatedUser = {
+      name: document.getElementById('name').value,
+      email: document.getElementById('email').value,
+      phone: document.getElementById('phone').value,
+      gender: document.getElementById('gender').value,
+      birth: document.getElementById('birth').value,
+      skinType: document.getElementById('skinType').value,
+      allergy: document.getElementById('allergy').value,
+      password: newPassword ? newPassword : stored.password
+    };
+
+    localStorage.setItem('user', JSON.stringify(updatedUser));
+    alert('정보가 저장되었습니다.');
+
+    fetch('/api/updateUser', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(updatedUser)
+    })
+    .then(res => res.json())
+    .then(result => {
+      console.log('서버 저장 결과:', result.message);
+    })
+    .catch(err => {
+      console.error('서버 저장 중 오류:', err);
+    });
+
+    document.getElementById('editForm').style.display = 'none';
+    document.getElementById('userInfo').style.display = 'block';
+    renderUserInfo(updatedUser);
+  });
+
+  document.getElementById('deleteBtn').addEventListener('click', () => {
+    if (confirm('정말로 탈퇴하시겠습니까? 이 작업은 되돌릴 수 없습니다.')) {
+      const user = JSON.parse(localStorage.getItem('user') || '{}');
+
+      fetch('/api/deleteUser', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: user.email })
+      })
+      .then(res => res.json())
+      .then(result => {
+        alert(result.message);
+        localStorage.removeItem('user');
+        window.location.href = '/signup.html';
+      })
+      .catch(err => {
+        console.error('탈퇴 처리 오류:', err);
+        alert('탈퇴 처리 중 문제가 발생했습니다.');
+      });
+    }
+  });
+  
+</script>
+</body>
+</html>

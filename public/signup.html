@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>회원가입 - SkinGenius</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f7f7f7;
+      padding: 40px;
+    }
+    .container {
+      max-width: 500px;
+      margin: auto;
+      background: #fff;
+      padding: 30px;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    h2 {
+      text-align: center;
+      color: #333;
+    }
+    label {
+      display: block;
+      margin-top: 15px;
+    }
+    input, select, textarea {
+      width: 100%;
+      padding: 8px;
+      margin-top: 5px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+    button {
+      width: 100%;
+      padding: 10px;
+      margin-top: 20px;
+      background-color: #ff5f7e;
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #ff5f7e;
+    }
+    small {
+      font-size: 12px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>회원가입</h2>
+    <form id="signupForm">
+      <label for="name">이름</label>
+      <input type="text" id="name" required>
+
+      <label for="email">이메일</label>
+      <input type="email" id="email" required>
+      <small id="emailMsg" style="color: red;"></small>
+      <button type="button" id="sendCodeBtn">인증 코드 전송</button>
+
+      <label for="authCode">인증 코드 입력</label>
+      <input type="text" id="authCode" placeholder="인증 코드를 입력하세요" required>
+      <small id="verifyMsg" style="color: green;"></small>
+      <button type="button" id="verifyBtn">인증 확인</button>
+
+      <label for="password">비밀번호</label>
+      <input type="password" id="password" required>
+
+      <label for="confirmPassword">비밀번호 확인</label>
+      <input type="password" id="confirmPassword" required>
+      <small id="passwordMsg"></small>
+
+      <label for="phone">전화번호</label>
+      <input type="tel" id="phone" placeholder="010-1234-5678" required>
+
+      <label for="gender">성별</label>
+      <select id="gender" required>
+        <option value="">선택</option>
+        <option value="남성">남성</option>
+        <option value="여성">여성</option>
+      </select>
+
+      <label for="birth">생년월일</label>
+      <input type="date" id="birth" required>
+
+      <label for="skinType">피부 타입</label>
+      <select id="skinType" required>
+        <option value="">선택</option>
+        <option value="지성">지성</option>
+        <option value="건성">건성</option>
+        <option value="복합성">복합성</option>
+        <option value="민감성">민감성</option>
+      </select>
+
+      <label for="allergy">알레르기</label>
+      <textarea id="allergy" rows="3" placeholder="예: 알로에, 향료 등"></textarea>
+
+      <button type="submit">가입하기</button>
+    </form>
+  </div>
+
+  <script>
+    let emailVerified = false;
+
+    // ✅ 이메일 중복 확인
+    document.getElementById('email').addEventListener('input', function () {
+      const email = this.value;
+      const msg = document.getElementById('emailMsg');
+
+      if (!email.includes('@')) {
+        msg.textContent = '';
+        return;
+      }
+
+      fetch(`http://localhost:3000/api/check-email?email=${encodeURIComponent(email)}`)
+        .then(res => res.json())
+        .then(data => {
+          if (data.exists) {
+            msg.textContent = '이미 사용 중인 이메일입니다.';
+            msg.style.color = 'red';
+          } else {
+            msg.textContent = '사용 가능한 이메일입니다.';
+            msg.style.color = 'green';
+          }
+        })
+        .catch(() => {
+          msg.textContent = '';
+        });
+    });
+
+    // ✅ 인증 코드 전송
+    document.getElementById('sendCodeBtn').addEventListener('click', () => {
+      const email = document.getElementById('email').value;
+      if (!email.includes('@')) {
+        alert('올바른 이메일 주소를 입력해주세요.');
+        return;
+      }
+
+      fetch('http://localhost:3000/api/send-code', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email })
+      })
+        .then(res => res.text())
+        .then(() => {
+          alert('인증 코드가 이메일로 전송되었습니다.');
+        })
+        .catch(() => {
+          alert('인증 코드 전송 중 오류가 발생했습니다.');
+        });
+    });
+
+    // ✅ 인증 확인
+    document.getElementById('verifyBtn').addEventListener('click', () => {
+      const email = document.getElementById('email').value;
+      const code = document.getElementById('authCode').value;
+      const verifyMsg = document.getElementById('verifyMsg');
+
+      fetch('http://localhost:3000/api/verify-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, code })
+      })
+        .then(res => res.json())
+        .then(result => {
+          if (result.success) {
+            verifyMsg.textContent = '인증 완료 ✅';
+            verifyMsg.style.color = 'green';
+            emailVerified = true;
+            document.getElementById('authCode').disabled = true;
+            document.getElementById('email').disabled = true;
+            document.getElementById('verifyBtn').disabled = true;
+            document.getElementById('sendCodeBtn').disabled = true;
+          } else {
+            verifyMsg.textContent = '인증 실패 ❌';
+            verifyMsg.style.color = 'red';
+            emailVerified = false;
+          }
+        })
+        .catch(() => {
+          verifyMsg.textContent = '오류 발생';
+          verifyMsg.style.color = 'red';
+          emailVerified = false;
+        });
+    });
+
+    // ✅ 비밀번호 실시간 일치 확인
+    document.getElementById('confirmPassword').addEventListener('input', function () {
+      const password = document.getElementById('password').value;
+      const confirmPassword = this.value;
+      const msg = document.getElementById('passwordMsg');
+
+      if (!confirmPassword) {
+        msg.textContent = '';
+        return;
+      }
+
+      if (password === confirmPassword) {
+        msg.textContent = '비밀번호가 일치합니다.';
+        msg.style.color = 'green';
+      } else {
+        msg.textContent = '비밀번호가 일치하지 않습니다.';
+        msg.style.color = 'red';
+      }
+    });
+
+    document.getElementById('password').addEventListener('input', function () {
+      document.getElementById('confirmPassword').dispatchEvent(new Event('input'));
+    });
+
+    // ✅ 폼 제출 처리
+    document.getElementById('signupForm').addEventListener('submit', function (e) {
+      e.preventDefault();
+
+      const password = document.getElementById('password').value;
+      const confirmPassword = document.getElementById('confirmPassword').value;
+
+      if (password !== confirmPassword) {
+        alert('비밀번호가 일치하지 않습니다.');
+        return;
+      }
+
+      if (!emailVerified) {
+        alert('이메일 인증을 완료해주세요.');
+        return;
+      }
+
+      const data = {
+        name: document.getElementById('name').value,
+        email: document.getElementById('email').value,
+        password,
+        phone: document.getElementById('phone').value,
+        gender: document.getElementById('gender').value,
+        birth: document.getElementById('birth').value,
+        skinType: document.getElementById('skinType').value,
+        allergy: document.getElementById('allergy').value,
+      };
+
+      fetch('http://localhost:3000/api/signup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      })
+        .then(res => {
+          if (!res.ok) throw res;
+          return res.json();
+        })
+        .then(result => {
+          alert(result.message || '회원가입 완료!');
+          document.getElementById('signupForm').reset();
+          window.location.href = '/login.html';
+        })
+        .catch(err => {
+          err.text().then(msg => {
+            alert(msg.includes('이미 가입된 이메일') ? msg : '회원가입 중 오류가 발생했습니다.');
+          });
+        });
+    });
+  </script>
+</body>
+</html>

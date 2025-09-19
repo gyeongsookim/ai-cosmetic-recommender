@@ -1,0 +1,32 @@
+[
+  {
+    "name": "1234",
+    "email": "456@456",
+    "password": "465",
+    "phone": "456",
+    "gender": "남성",
+    "birth": "2025-06-30",
+    "skinType": "지성",
+    "allergy": ""
+  },
+  {
+    "name": "123",
+    "email": "123@123",
+    "phone": "123",
+    "gender": "남성",
+    "birth": "2025-07-08",
+    "skinType": "지성",
+    "allergy": "",
+    "password": "123"
+  },
+  {
+    "name": "홍길동",
+    "email": "daesin1021@naver.com",
+    "phone": "123",
+    "gender": "남성",
+    "birth": "2025-06-06",
+    "skinType": "지성",
+    "allergy": "",
+    "password": "123"
+  }
+]

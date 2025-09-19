@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <title>설문 기반 피부 분석</title>
+  <style>
+    body {
+      font-family: 'Noto Sans KR', sans-serif;
+      background-color: #f4f4f4;
+      padding: 40px;
+    }
+    .container {
+      max-width: 600px;
+      margin: auto;
+      background: #fff;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    h2 {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+    .question {
+      margin-bottom: 20px;
+    }
+    .question label {
+      display: block;
+      margin-bottom: 10px;
+      font-weight: bold;
+    }
+    .question input {
+      margin-right: 8px;
+    }
+    #submitBtn {
+      width: 100%;
+      padding: 12px;
+      background-color: #ff6f91;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    #submitBtn:hover {
+      background-color: #e0577c;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>설문을 통한 피부 타입 분석</h2>
+    <form id="surveyForm">
+      <!-- 문항 1~8 -->
+      <div class="question">
+        <label>1. 세안 후 피부가 당기나요?</label>
+        <input type="radio" name="q1" value="건성"> 항상 그렇다<br>
+        <input type="radio" name="q1" value="복합성"> 가끔 그렇다<br>
+        <input type="radio" name="q1" value="지성"> 전혀 아니다
+      </div>
+      <div class="question">
+        <label>2. T존이 자주 번들거리나요?</label>
+        <input type="radio" name="q2" value="지성"> 자주 그렇다<br>
+        <input type="radio" name="q2" value="복합성"> 가끔 그렇다<br>
+        <input type="radio" name="q2" value="건성"> 거의 없다
+      </div>
+      <div class="question">
+        <label>3. 피부가 자주 민감하게 반응하나요?</label>
+        <input type="radio" name="q3" value="민감성"> 자주 그렇다<br>
+        <input type="radio" name="q3" value="복합성"> 가끔 그렇다<br>
+        <input type="radio" name="q3" value="지성"> 아니다
+      </div>
+      <div class="question">
+        <label>4. 각질이 자주 생기나요?</label>
+        <input type="radio" name="q4" value="건성"> 자주 생긴다<br>
+        <input type="radio" name="q4" value="복합성"> 가끔 생긴다<br>
+        <input type="radio" name="q4" value="지성"> 거의 없다
+      </div>
+      <div class="question">
+        <label>5. 피부가 당기면서 유분도 있는 편인가요?</label>
+        <input type="radio" name="q5" value="복합성"> 그렇다<br>
+        <input type="radio" name="q5" value="건성"> 당기기만 한다<br>
+        <input type="radio" name="q5" value="지성"> 유분만 많다
+      </div>
+      <div class="question">
+        <label>6. 여드름이나 트러블이 자주 나나요?</label>
+        <input type="radio" name="q6" value="지성"> 자주 난다<br>
+        <input type="radio" name="q6" value="복합성"> 가끔 난다<br>
+        <input type="radio" name="q6" value="건성"> 거의 없다
+      </div>
+      <div class="question">
+        <label>7. 화장품 사용 시 피부가 민감하게 반응하나요?</label>
+        <input type="radio" name="q7" value="민감성"> 자주 그렇다<br>
+        <input type="radio" name="q7" value="복합성"> 가끔 그렇다<br>
+        <input type="radio" name="q7" value="지성"> 아니다
+      </div>
+      <div class="question">
+        <label>8. 계절 변화에 따라 피부 변화가 큰가요?</label>
+        <input type="radio" name="q8" value="복합성"> 그렇다<br>
+        <input type="radio" name="q8" value="건성"> 조금 그렇다<br>
+        <input type="radio" name="q8" value="지성"> 별로 없다
+      </div>
+
+      <!-- 고민 항목 -->
+      <div class="question">
+        <label>현재 고민되는 피부 문제를 모두 선택하세요 (복수 선택)</label>
+        <input type="checkbox" name="concern" value="여드름"> 여드름
+        <input type="checkbox" name="concern" value="아토피"> 아토피
+        <input type="checkbox" name="concern" value="홍조"> 홍조
+        <input type="checkbox" name="concern" value="피지"> 피지
+      </div>
+
+      <button type="submit" id="submitBtn">분석하기</button>
+    </form>
+  </div>
+
+  <script>
+    document.getElementById('surveyForm').addEventListener('submit', async function (e) {
+      e.preventDefault();
+
+      // 필수 질문 체크
+      const requiredQuestions = ['q1','q2','q3','q4','q5','q6','q7','q8'];
+      for (const q of requiredQuestions) {
+        if (!document.querySelector(`input[name="${q}"]:checked`)) {
+          alert('모든 문항에 응답해 주세요.');
+          return;
+        }
+      }
+
+      const formData = new FormData(this);
+      const counts = {};
+      const concerns = [];
+
+      for (const [key, value] of formData.entries()) {
+        if (key === 'concern') {
+          concerns.push(value);
+        } else {
+          counts[value] = (counts[value] || 0) + 1;
+        }
+      }
+
+      const sorted = Object.entries(counts).sort((a, b) => b[1] - a[1]);
+      const skinType = sorted.length > 0 ? sorted[0][0] : '분석 불가';
+
+      const user = JSON.parse(localStorage.getItem('user'));
+      const userId = user?.id || user?.email || user?.name || 'anonymous';
+
+      // 서버에 저장
+      await fetch('/api/survey', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId, skinType, concerns })
+      });
+
+      // 분석 결과 alert + 지연 이동
+      alert(`📋 분석 결과\n\n- 피부 타입: ${skinType}\n- 피부 고민: ${concerns.length > 0 ? concerns.join(', ') : '없음'}`);
+
+      setTimeout(() => {
+        window.location.href = '/mypage.html';
+      }, 500); // 0.5초 후 마이페이지로 이동
+    });
+  </script>
+</body>
+</html>
